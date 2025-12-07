@@ -3,9 +3,7 @@ import axios from 'axios'
 import toast from "react-hot-toast";
 import { io } from "socket.io-client"
 
-
-const backendUrl = import.meta.env.VITE_BACKEND_URL;
-axios.defaults.baseURL = backendUrl;
+axios.defaults.baseURL = import.meta.env.VITE_BACKEND_URL;
 
 export const AuthContext = createContext();
 
@@ -16,7 +14,6 @@ export const AuthProvider = ({ children })=>{
     const [onlineUsers, setOnlineUsers] = useState([]);
     const [socket, setSocket] = useState(null);
 
-    // Check if user is authenticated and if so, set the user data and connect the socket
     const checkAuth = async () => {
         try {
             const { data } = await axios.get("/api/auth/check");
@@ -29,27 +26,23 @@ export const AuthProvider = ({ children })=>{
         }
     }
 
-// Login function to handle user authentication and socket connection
-
-const login = async (state, credentials)=>{
-    try {
-        const { data } = await axios.post(`/api/auth/${state}`, credentials);
-        if (data.success){
-            setAuthUser(data.userData);
-            connectSocket(data.userData);
-            axios.defaults.headers.common["token"] = data.token;
-            setToken(data.token);
-            localStorage.setItem("token", data.token)
-            toast.success(data.message)
-        }else{
-            toast.error(data.message)
+    const login = async (state, credentials)=>{
+        try {
+            const { data } = await axios.post(`/api/auth/${state}`, credentials);
+            if (data.success){
+                setAuthUser(data.userData);
+                connectSocket(data.userData);
+                axios.defaults.headers.common["token"] = data.token;
+                setToken(data.token);
+                localStorage.setItem("token", data.token)
+                toast.success(data.message)
+            }else{
+                toast.error(data.message)
+            }
+        } catch (error) {
+            toast.error(error.message)
         }
-    } catch (error) {
-        toast.error(error.message)
     }
-}
-
-// Logout function to handle user logout and socket disconnection
 
     const logout = async () =>{
         localStorage.removeItem("token");
@@ -60,8 +53,6 @@ const login = async (state, credentials)=>{
         toast.success("Logged out successfully")
         socket.disconnect();
     }
-
-    // Update profile function to handle user profile updates
 
     const updateProfile = async (body)=>{
         try {
@@ -75,14 +66,16 @@ const login = async (state, credentials)=>{
         }
     }
 
-    // Connect socket function to handle socket connection and online users updates
     const connectSocket = (userData)=>{
         if(!userData || socket?.connected) return;
-        const newSocket = io(backendUrl, {
+
+        // UPDATED — using Vercel proxy
+        const newSocket = io("/socket", {
             query: {
                 userId: userData._id,
             }
         });
+
         newSocket.connect();
         setSocket(newSocket);
 

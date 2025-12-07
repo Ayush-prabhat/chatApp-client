@@ -1,8 +1,12 @@
 {
-    "rewrites": [
-      {
-        "source": "/(.*)",
-        "destination": "/"
-      }
-    ]
-  }
+  "rewrites": [
+    {
+      "source": "/api/(.*)",
+      "destination": "http://chatapp-env.eba-fxxmwhqt.ap-south-1.elasticbeanstalk.com/api/$1"
+    },
+    {
+      "source": "/socket",
+      "destination": "http://chatapp-env.eba-fxxmwhqt.ap-south-1.elasticbeanstalk.com"
+    }
+  ]
+}
